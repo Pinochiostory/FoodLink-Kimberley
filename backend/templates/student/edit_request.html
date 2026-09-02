@@ -1,0 +1,64 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Request | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('dashboard') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Edit Request #' ~ food_request.request_id, 'Update the details of your food request.') }}
+
+        <main class="page-content" style="max-width: 720px;">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="/student/edit-request/{{ food_request.request_id }}">
+
+                        <div class="form-group">
+                            <label for="urgency">Urgency</label>
+                            <select id="urgency" name="urgency" required>
+                                <option value="Low" {% if food_request.urgency == "Low" %}selected{% endif %}>Low</option>
+                                <option value="Medium" {% if food_request.urgency == "Medium" %}selected{% endif %}>Medium</option>
+                                <option value="High" {% if food_request.urgency == "High" %}selected{% endif %}>High</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ food_request.location }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Food assistance needed</label>
+                            <textarea id="description" name="description" rows="5" required>{{ food_request.description }}</textarea>
+                        </div>
+
+                        <div style="display:flex; gap: var(--space-3);">
+                            <a href="/student/dashboard" class="btn btn-outline btn-block">
+                                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {{ ic.icon('check', 'icon icon-sm') }} Save changes
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

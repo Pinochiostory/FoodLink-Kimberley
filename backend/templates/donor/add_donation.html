@@ -1,0 +1,70 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Add Donation | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('add_donation') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Add Food Donation', 'Provide details about the food you would like to donate.') }}
+
+        <main class="page-content" style="max-width: 720px;">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="/donor/add-donation">
+
+                        <div class="form-group">
+                            <label for="food_name">Food type</label>
+                            <input type="text" id="food_name" name="food_name" placeholder="e.g. Bread and milk" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="quantity">Quantity</label>
+                                <input type="number" id="quantity" name="quantity" min="1" placeholder="Enter quantity" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expiry_date">Expiry date</label>
+                                <input type="date" id="expiry_date" name="expiry_date" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Pickup location</label>
+                            <input type="text" id="location" name="location" placeholder="e.g. Kimberley CBD" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pickup_time">Pickup time</label>
+                            <input type="text" id="pickup_time" name="pickup_time" placeholder="e.g. 14:00 - 17:00">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            {{ ic.icon('plus', 'icon icon-sm') }} Add donation
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+            <a href="/donor/dashboard" class="btn btn-ghost btn-sm" style="margin-top: var(--space-5);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to donor dashboard
+            </a>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

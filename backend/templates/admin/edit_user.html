@@ -1,0 +1,74 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit User | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('users') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Edit User Account', 'User ID #' ~ user.user_id) }}
+
+        <main class="page-content" style="max-width: 720px;">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="/admin/edit-user/{{ user.user_id }}">
+
+                        <div class="form-group">
+                            <label for="name">Full name</label>
+                            <input type="text" id="name" name="name" value="{{ user.name }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <input type="email" id="email" name="email" value="{{ user.email }}" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="role">Account role</label>
+                                <select id="role" name="role" required>
+                                    <option value="Student" {% if user.role == "Student" %}selected{% endif %}>Student</option>
+                                    <option value="Donor" {% if user.role == "Donor" %}selected{% endif %}>Donor</option>
+                                    <option value="Admin" {% if user.role == "Admin" %}selected{% endif %}>Administrator</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="account_status">Account status</label>
+                                <select id="account_status" name="account_status" required>
+                                    <option value="Approved" {% if user.account_status == "Approved" %}selected{% endif %}>Approved</option>
+                                    <option value="Pending" {% if user.account_status == "Pending" %}selected{% endif %}>Pending</option>
+                                    <option value="Rejected" {% if user.account_status == "Rejected" %}selected{% endif %}>Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display:flex; gap: var(--space-3);">
+                            <a href="/admin/users" class="btn btn-outline btn-block">
+                                {{ ic.icon('x', 'icon icon-sm') }} Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {{ ic.icon('check', 'icon icon-sm') }} Save changes
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

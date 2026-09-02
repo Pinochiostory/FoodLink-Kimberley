@@ -1,0 +1,68 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('notifications') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Notifications', 'Stay updated about your food donations.') }}
+
+        <main class="page-content">
+            <div class="card" data-loading>
+                <div data-skeleton style="padding: var(--space-6);">
+                    {% for i in range(4) %}
+                    <div class="skeleton skeleton-text" style="height:22px; margin-bottom: var(--space-4);"></div>
+                    {% endfor %}
+                </div>
+                <div data-loaded-content>
+                    {% if notifications %}
+                    <div>
+                        {% for notification in notifications %}
+                        <div style="display:flex; gap: var(--space-4); align-items:flex-start; padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-border);">
+                            <div class="stat-icon" style="width:36px; height:36px; {{ 'background: var(--color-primary-light); color: var(--color-primary-active);' if notification.is_read == 0 else '' }}">
+                                {{ ic.icon('bell', 'icon icon-sm') }}
+                            </div>
+                            <div style="flex:1;">
+                                <p style="color: var(--color-ink); font-weight: {{ 'var(--fw-semibold)' if notification.is_read == 0 else 'var(--fw-regular)' }};">{{ notification.message }}</p>
+                                <small style="color: var(--color-ink-subtle); font-size: var(--text-xs);">{{ notification.created_at }}</small>
+                            </div>
+                            {% if notification.is_read == 0 %}
+                            <span class="badge badge-primary">New</span>
+                            {% else %}
+                            <span class="badge badge-neutral">Read</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-wrap">{{ ic.icon('bell', 'icon icon-lg') }}</div>
+                        <h4>No notifications</h4>
+                        <p>You currently have no notifications.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="{{ url_for('donor_dashboard') }}" class="btn btn-ghost btn-sm" style="margin-top: var(--space-6);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard
+            </a>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

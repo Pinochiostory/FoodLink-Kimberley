@@ -1,0 +1,132 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Donor Dashboard | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('dashboard') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Donor Dashboard', 'Manage your food donations and help students in need.', url_for('donor_notifications')) }}
+
+        <main class="page-content">
+
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">{{ ic.icon('box', 'icon icon-md') }}</div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ donations|length }}</div>
+                        <div class="stat-label">Total donations</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon accent">{{ ic.icon('check-circle', 'icon icon-md') }}</div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ donations|selectattr('status', 'equalto', 'Available')|list|length }}</div>
+                        <div class="stat-label">Available</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">{{ ic.icon('clock', 'icon icon-md') }}</div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ donations|selectattr('status', 'equalto', 'Reserved')|list|length }}</div>
+                        <div class="stat-label">Reserved</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">{{ ic.icon('check', 'icon icon-md') }}</div>
+                    <div class="stat-body">
+                        <div class="stat-value">{{ donations|selectattr('status', 'equalto', 'Collected')|list|length }}</div>
+                        <div class="stat-label">Collected</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3>My donations</h3>
+                        <p>The food you've made available through FoodLink</p>
+                    </div>
+                    <a href="/donor/add-donation" class="btn btn-primary btn-sm">
+                        {{ ic.icon('plus', 'icon icon-sm') }} Add donation
+                    </a>
+                </div>
+                <div class="card-body" data-loading>
+                    <div data-skeleton>
+                        <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:0;">
+                            {% for i in range(3) %}
+                            <div class="skeleton" style="height:190px; border-radius: var(--radius-md);"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div data-loaded-content>
+                        {% if donations %}
+                        <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:0;">
+                            {% for donation in donations %}
+                            <div class="card" style="box-shadow:none;">
+                                <div class="card-body">
+                                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-3); margin-bottom: var(--space-3);">
+                                        <h4>#{{ donation.donation_id }} &middot; {{ donation.food_name }}</h4>
+                                        <span class="badge {{ 'badge-success' if donation.status == 'Available' else ('badge-warning' if donation.status == 'Reserved' else ('badge-neutral' if donation.status == 'Collected' else 'badge-danger')) }}">
+                                            {{ donation.status }}
+                                        </span>
+                                    </div>
+                                    <p style="font-size: var(--text-sm); margin-bottom: 6px;"><strong style="color: var(--color-ink);">Quantity:</strong> {{ donation.quantity }}</p>
+                                    <p style="font-size: var(--text-sm); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">{{ ic.icon('map-pin', 'icon icon-xs') }} {{ donation.location }}</p>
+                                    <p style="font-size: var(--text-sm); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">{{ ic.icon('calendar', 'icon icon-xs') }} Expires {{ donation.expiry_date }}</p>
+                                    <p style="font-size: var(--text-sm); margin-bottom: var(--space-4); display:flex; align-items:center; gap:6px;">{{ ic.icon('clock', 'icon icon-xs') }} Pickup {{ donation.pickup_time }}</p>
+
+                                    {% if donation.status == "Available" %}
+                                    <div style="display:flex; gap: var(--space-2);">
+                                        <a href="/donor/edit-donation/{{ donation.donation_id }}" class="btn btn-outline btn-sm btn-block">
+                                            {{ ic.icon('edit', 'icon icon-sm') }} Edit
+                                        </a>
+                                        <form method="POST" action="/donor/cancel-donation/{{ donation.donation_id }}" onsubmit="return confirm('Are you sure you want to cancel this donation?');" style="flex:1;">
+                                            <button type="submit" class="btn btn-danger btn-sm btn-block">
+                                                {{ ic.icon('x', 'icon icon-sm') }} Cancel
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% elif donation.status == "Reserved" %}
+                                    <p style="font-size: var(--text-sm); color: var(--color-ink-subtle);">This donation has been reserved and can no longer be edited.</p>
+                                    {% elif donation.status == "Collected" %}
+                                    <p style="font-size: var(--text-sm); color: var(--color-ink-subtle);">This donation has been collected.</p>
+                                    {% elif donation.status == "Cancelled" %}
+                                    <p style="font-size: var(--text-sm); color: var(--color-ink-subtle);">This donation has been cancelled.</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="icon-wrap">{{ ic.icon('box', 'icon icon-lg') }}</div>
+                            <h4>No donations yet</h4>
+                            <p>You have not added any donations yet.</p>
+                            <a href="/donor/add-donation" class="btn btn-primary btn-sm" style="margin-top: var(--space-4);">
+                                {{ ic.icon('plus', 'icon icon-sm') }} Add your first donation
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

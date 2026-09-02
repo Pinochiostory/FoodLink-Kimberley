@@ -1,0 +1,342 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Administrator Dashboard | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('dashboard') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Administrator Dashboard', 'Welcome, ' ~ session.get('name','') ~ '.') }}
+
+        <main class="page-content">
+
+            <!-- ================= REPORTS ================= -->
+            <div class="card" style="margin-bottom: var(--space-6);">
+                <div class="card-body" style="display:flex; align-items:center; justify-content:space-between; gap: var(--space-4); flex-wrap:wrap;">
+                    <div style="display:flex; align-items:center; gap: var(--space-3);">
+                        <div class="stat-icon">{{ ic.icon('file-text', 'icon icon-md') }}</div>
+                        <div>
+                            <h4>Reports</h4>
+                            <p style="font-size: var(--text-sm);">Export the current system data</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap: var(--space-2);">
+                        <a href="/admin/reports/excel" class="btn btn-outline btn-sm">{{ ic.icon('download', 'icon icon-sm') }} Excel report</a>
+                        <a href="/admin/reports/pdf" class="btn btn-outline btn-sm">{{ ic.icon('download', 'icon icon-sm') }} PDF report</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= SYSTEM OVERVIEW ================= -->
+            <h3 style="margin-bottom: var(--space-4);">System overview</h3>
+            <div class="stat-grid" data-loading>
+                <div data-skeleton>
+                    <div class="stat-grid" style="margin-bottom:0;">
+                        {% for i in range(5) %}<div class="stat-card skeleton" style="height:84px"></div>{% endfor %}
+                    </div>
+                </div>
+                <div data-loaded-content>
+                    <div class="stat-grid" style="margin-bottom:0;">
+                        <div class="stat-card">
+                            <div class="stat-icon">{{ ic.icon('users', 'icon icon-md') }}</div>
+                            <div class="stat-body"><div class="stat-value">{{ statistics.students }}</div><div class="stat-label">Students</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon accent">{{ ic.icon('heart', 'icon icon-md') }}</div>
+                            <div class="stat-body"><div class="stat-value">{{ statistics.donors }}</div><div class="stat-label">Donors</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">{{ ic.icon('clock', 'icon icon-md') }}</div>
+                            <div class="stat-body"><div class="stat-value">{{ statistics.pending_requests }}</div><div class="stat-label">Pending requests</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">{{ ic.icon('box', 'icon icon-md') }}</div>
+                            <div class="stat-body"><div class="stat-value">{{ statistics.available_donations }}</div><div class="stat-label">Available donations</div></div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon accent">{{ ic.icon('check-circle', 'icon icon-md') }}</div>
+                            <div class="stat-body"><div class="stat-value">{{ statistics.completed_matches }}</div><div class="stat-label">Completed matches</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= AI FOOD DEMAND ================= -->
+            <h3 style="margin: var(--space-7) 0 var(--space-4);">AI food demand analysis</h3>
+            <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display:flex; align-items:center; gap: var(--space-2); margin-bottom: var(--space-3); color: var(--color-ink-subtle); font-size: var(--text-sm); font-weight: var(--fw-semibold);">
+                            {{ ic.icon('trending-up', 'icon icon-sm') }} Next-day food demand
+                        </div>
+                        {% if prediction is not none %}
+                        <div class="stat-value" style="font-size: var(--text-3xl);">{{ prediction }}</div>
+                        <p style="font-size: var(--text-sm);">predicted food requests</p>
+                        {% else %}
+                        <p style="font-size: var(--text-sm);">Not enough historical data available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display:flex; align-items:center; gap: var(--space-2); margin-bottom: var(--space-3); color: var(--color-ink-subtle); font-size: var(--text-sm); font-weight: var(--fw-semibold);">
+                            {{ ic.icon('bar-chart', 'icon icon-sm') }} Overall demand level
+                        </div>
+                        {% if demand_level %}
+                        <span class="badge {{ 'badge-danger' if demand_level == 'High' else ('badge-warning' if demand_level == 'Medium' else 'badge-success') }}" style="font-size: var(--text-md); padding: 8px 16px;">
+                            {{ demand_level }}
+                        </span>
+                        {% else %}
+                        <p style="font-size: var(--text-sm);">Not available.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= CURRENT LOCATION DEMAND ================= -->
+            <h3 style="margin: var(--space-7) 0 var(--space-4);">Current demand by location</h3>
+            {% if location_demand %}
+            <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                {% for location in location_demand %}
+                <div class="card">
+                    <div class="card-body">
+                        <h4 style="margin-bottom: var(--space-3); display:flex; align-items:center; gap:6px;">{{ ic.icon('map-pin', 'icon icon-sm') }} {{ location.location }}</h4>
+                        <p style="font-size: var(--text-sm); display:flex; justify-content:space-between; margin-bottom: var(--space-2);"><strong style="color: var(--color-ink);">Current requests</strong> <span>{{ location.requests }}</span></p>
+                        <span class="badge {{ 'badge-danger' if location.demand_level == 'High' else ('badge-warning' if location.demand_level == 'Medium' else 'badge-success') }}">{{ location.demand_level }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card"><div class="empty-state" style="padding: var(--space-6);"><p>No location demand data is currently available.</p></div></div>
+            {% endif %}
+
+            <!-- ================= SYSTEM STATISTICS ================= -->
+            <h3 style="margin: var(--space-7) 0 var(--space-4);">System statistics</h3>
+            <div class="stat-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">{{ ic.icon('inbox', 'icon icon-md') }}</div>
+                    <div class="stat-body"><div class="stat-value">{{ total_requests }}</div><div class="stat-label">Total requests</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon accent">{{ ic.icon('box', 'icon icon-md') }}</div>
+                    <div class="stat-body"><div class="stat-value">{{ total_donations }}</div><div class="stat-label">Total donations</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon warning">{{ ic.icon('clock', 'icon icon-md') }}</div>
+                    <div class="stat-body"><div class="stat-value">{{ pending_requests }}</div><div class="stat-label">Pending requests</div></div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">{{ ic.icon('check', 'icon icon-md') }}</div>
+                    <div class="stat-body"><div class="stat-value">{{ completed_requests }}</div><div class="stat-label">Completed requests</div></div>
+                </div>
+            </div>
+
+            <!-- ================= CHARTS ================= -->
+            <h3 style="margin: var(--space-7) 0 var(--space-4);">Charts &amp; statistics</h3>
+            <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));" data-loading>
+                <div data-skeleton>
+                    <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-bottom:0;">
+                        {% for i in range(4) %}<div class="skeleton" style="height:280px; border-radius: var(--radius-md);"></div>{% endfor %}
+                    </div>
+                </div>
+                <div data-loaded-content>
+                    <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); margin-bottom:0;">
+                        <div class="card"><div class="card-body">
+                            <h4 style="margin-bottom: var(--space-4);">Food requests by status</h4>
+                            <div style="height:240px;"><canvas id="requestStatusChart"></canvas></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <h4 style="margin-bottom: var(--space-4);">Donations by status</h4>
+                            <div style="height:240px;"><canvas id="donationStatusChart"></canvas></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <h4 style="margin-bottom: var(--space-4);">Requests by location</h4>
+                            <div style="height:240px;"><canvas id="requestLocationChart"></canvas></div>
+                        </div></div>
+                        <div class="card"><div class="card-body">
+                            <h4 style="margin-bottom: var(--space-4);">Donations by location</h4>
+                            <div style="height:240px;"><canvas id="donationLocationChart"></canvas></div>
+                        </div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= AI LOCATION PREDICTIONS ================= -->
+            <h3 style="margin: var(--space-7) 0 var(--space-4);">AI location predictions</h3>
+            {% if location_predictions %}
+            <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                {% for location in location_predictions %}
+                <div class="card">
+                    <div class="card-body">
+                        <h4 style="margin-bottom: var(--space-3); display:flex; align-items:center; gap:6px;">{{ ic.icon('map-pin', 'icon icon-sm') }} {{ location.location }}</h4>
+                        <p style="font-size: var(--text-sm); display:flex; justify-content:space-between; margin-bottom: var(--space-2);"><strong style="color: var(--color-ink);">Predicted requests</strong> <span>{{ location.prediction }}</span></p>
+                        <span class="badge {{ 'badge-danger' if location.demand_level == 'High' else ('badge-warning' if location.demand_level == 'Medium' else 'badge-success') }}">{{ location.demand_level }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card"><div class="empty-state" style="padding: var(--space-6);"><p>Not enough historical data to predict demand by location.</p></div></div>
+            {% endif %}
+
+            <!-- ================= AI RECOMMENDATIONS ================= -->
+            <h3 style="margin: var(--space-7) 0 var(--space-4);">AI recommendations</h3>
+            {% if recommendations %}
+            <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+                {% for item in recommendations %}
+                <div class="card">
+                    <div class="card-body">
+                        <h4 style="margin-bottom: var(--space-3); display:flex; align-items:center; gap:6px;">{{ ic.icon('map-pin', 'icon icon-sm') }} {{ item.location }}</h4>
+                        <p style="font-size: var(--text-sm); margin-bottom: 6px;"><strong style="color: var(--color-ink);">Predicted requests:</strong> {{ item.prediction }}</p>
+                        <p style="font-size: var(--text-sm); margin-bottom: var(--space-3);"><strong style="color: var(--color-ink);">Available food:</strong> {{ item.available_food }}</p>
+                        <div class="alert alert-info" style="margin:0;">{{ ic.icon('info', 'icon icon-sm') }} {{ item.recommendation }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card"><div class="empty-state" style="padding: var(--space-6);"><p>No AI recommendations are currently available.</p></div></div>
+            {% endif %}
+
+        </main>
+    </div>
+</div>
+
+<script id="chart-data" type="application/json">
+{
+    "requestStatus": {{ request_status_data | default([]) | tojson }},
+    "donationStatus": {{ donation_status_data | default([]) | tojson }},
+    "requestLocation": {{ request_location_data | default([]) | tojson }},
+    "donationLocation": {{ donation_location_data | default([]) | tojson }}
+}
+</script>
+
+<script>
+    const chartData = JSON.parse(document.getElementById("chart-data").textContent);
+    const requestStatusData = chartData.requestStatus;
+    const donationStatusData = chartData.donationStatus;
+    const requestLocationData = chartData.requestLocation;
+    const donationLocationData = chartData.donationLocation;
+
+    const palette = {
+        primary: "#6260ff",
+        primaryLight: "#e4e4ff",
+        accent: "#1f9d8a",
+        accentLight: "#dff5f1",
+        warning: "#b5790f",
+        danger: "#d33c4e",
+        ink: "#57567a",
+        grid: "#e4e3f5"
+    };
+
+    Chart.defaults.font.family = "'Inter', 'Segoe UI', Arial, sans-serif";
+    Chart.defaults.color = palette.ink;
+    Chart.defaults.borderColor = palette.grid;
+
+    new Chart(document.getElementById("requestStatusChart"), {
+        type: "bar",
+        data: {
+            labels: requestStatusData.map(item => item.status),
+            datasets: [{
+                label: "Requests",
+                data: requestStatusData.map(item => Number(item.count)),
+                backgroundColor: palette.primary,
+                borderRadius: 6,
+                maxBarThickness: 36
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: palette.grid } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("donationStatusChart"), {
+        type: "doughnut",
+        data: {
+            labels: donationStatusData.map(item => item.status),
+            datasets: [{
+                label: "Donations",
+                data: donationStatusData.map(item => Number(item.count)),
+                backgroundColor: [palette.primary, palette.primaryLight, palette.accent, palette.danger],
+                borderWidth: 2,
+                borderColor: "#ffffff"
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: "bottom", labels: { usePointStyle: true, boxWidth: 8 } } }
+        }
+    });
+
+    new Chart(document.getElementById("requestLocationChart"), {
+        type: "bar",
+        data: {
+            labels: requestLocationData.map(item => item.location),
+            datasets: [{
+                label: "Requests",
+                data: requestLocationData.map(item => Number(item.count)),
+                backgroundColor: palette.accent,
+                borderRadius: 6,
+                maxBarThickness: 20
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: palette.grid } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+
+    new Chart(document.getElementById("donationLocationChart"), {
+        type: "bar",
+        data: {
+            labels: donationLocationData.map(item => item.location),
+            datasets: [{
+                label: "Donations",
+                data: donationLocationData.map(item => Number(item.count)),
+                backgroundColor: palette.primary,
+                borderRadius: 6,
+                maxBarThickness: 20
+            }]
+        },
+        options: {
+            indexAxis: "y",
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                x: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: palette.grid } },
+                y: { grid: { display: false } }
+            }
+        }
+    });
+</script>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

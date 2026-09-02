@@ -1,0 +1,105 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Users | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('users') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Manage Users', (users|length ~ ' registered account' ~ ('s' if users|length != 1 else '')) if users else 'No registered accounts') }}
+
+        <main class="page-content">
+            <a href="/admin/dashboard" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-5);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard
+            </a>
+
+            <div class="card" data-loading>
+                <div data-skeleton style="padding: var(--space-6);">
+                    {% for i in range(4) %}
+                    <div class="skeleton skeleton-text" style="height:48px; margin-bottom: var(--space-3);"></div>
+                    {% endfor %}
+                </div>
+                <div data-loaded-content>
+                    {% if users %}
+                    <div class="table-wrap" style="border:none; border-radius:0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}
+                                <tr>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap: var(--space-3);">
+                                            <div class="avatar">{{ user.name[0]|upper }}</div>
+                                            <div>
+                                                <strong>{{ user.name }}</strong>
+                                                <div style="color: var(--color-ink-subtle); font-size: var(--text-xs);">ID #{{ user.user_id }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ user.email }}</td>
+                                    <td><span class="badge badge-neutral">{{ user.role }}</span></td>
+                                    <td>
+                                        <span class="badge {{ 'badge-success' if user.account_status == 'Approved' else ('badge-warning' if user.account_status == 'Pending' else 'badge-danger') }}">
+                                            {{ user.account_status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="table-actions" style="flex-wrap: wrap;">
+                                            {% if user.account_status == "Pending" %}
+                                            <form method="POST" action="/admin/approve-user/{{ user.user_id }}">
+                                                <button type="submit" class="btn btn-secondary btn-sm">{{ ic.icon('check', 'icon icon-sm') }} Approve</button>
+                                            </form>
+                                            <form method="POST" action="/admin/reject-user/{{ user.user_id }}">
+                                                <button type="submit" class="btn btn-outline btn-sm">{{ ic.icon('x', 'icon icon-sm') }} Reject</button>
+                                            </form>
+                                            {% endif %}
+
+                                            {% if user.user_id != session["user_id"] %}
+                                            <a href="/admin/edit-user/{{ user.user_id }}" class="btn btn-outline btn-sm" aria-label="Edit account">{{ ic.icon('edit', 'icon icon-sm') }}</a>
+                                            <form method="POST" action="/admin/delete-user/{{ user.user_id }}" onsubmit="return confirm('Are you sure you want to permanently delete this account? This action cannot be undone.');">
+                                                <button type="submit" class="btn btn-danger btn-sm" aria-label="Delete account">{{ ic.icon('trash', 'icon icon-sm') }}</button>
+                                            </form>
+                                            {% else %}
+                                            <span style="color: var(--color-ink-subtle); font-size: var(--text-xs);">This is you</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-wrap">{{ ic.icon('users', 'icon icon-lg') }}</div>
+                        <h4>No users found</h4>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

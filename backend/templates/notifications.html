@@ -1,0 +1,101 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notifications | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('notifications') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Notifications', (notifications|length ~ ' notification' ~ ('s' if notifications|length != 1 else '')) if notifications else 'No notifications') }}
+
+        <main class="page-content">
+
+            <div style="display:flex; align-items:center; justify-content:space-between; gap: var(--space-4); margin-bottom: var(--space-5);">
+                <div>
+                    {% if session["role"] == "Student" %}
+                    <a href="/student/dashboard" class="btn btn-ghost btn-sm">{{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard</a>
+                    {% elif session["role"] == "Donor" %}
+                    <a href="/donor/dashboard" class="btn btn-ghost btn-sm">{{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard</a>
+                    {% else %}
+                    <a href="/admin/dashboard" class="btn btn-ghost btn-sm">{{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard</a>
+                    {% endif %}
+                </div>
+                {% if notifications %}
+                <form method="POST" action="/notifications/read-all">
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                        {{ ic.icon('check', 'icon icon-sm') }} Mark all as read
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+
+            <div class="card" data-loading>
+                <div data-skeleton style="padding: var(--space-6);">
+                    {% for i in range(4) %}
+                    <div class="skeleton skeleton-text" style="height:26px; margin-bottom: var(--space-4);"></div>
+                    {% endfor %}
+                </div>
+                <div data-loaded-content>
+                    {% if notifications %}
+                    <div>
+                        {% for notification in notifications %}
+                        <div style="display:flex; align-items:center; gap: var(--space-4); padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-border);">
+                            <div class="stat-icon" style="width:36px; height:36px; flex-shrink:0; {{ 'background: var(--color-primary-light); color: var(--color-primary-active);' if not notification.is_read else '' }}">
+                                {{ ic.icon('bell', 'icon icon-sm') }}
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="display:flex; align-items:center; gap: var(--space-2); margin-bottom:2px;">
+                                    {% if notification.is_read %}
+                                    <span class="badge badge-neutral">Read</span>
+                                    {% else %}
+                                    <span class="badge badge-primary">New</span>
+                                    {% endif %}
+                                </div>
+                                <p style="color: var(--color-ink); font-weight: {{ 'var(--fw-semibold)' if not notification.is_read else 'var(--fw-regular)' }};">{{ notification.message }}</p>
+                                <small style="color: var(--color-ink-subtle); font-size: var(--text-xs);">{{ notification.created_at }}</small>
+                            </div>
+                            <div class="table-actions">
+                                {% if not notification.is_read %}
+                                <form method="POST" action="/notifications/read/{{ notification.notification_id }}">
+                                    <button type="submit" class="btn btn-outline btn-sm">
+                                        {{ ic.icon('check', 'icon icon-sm') }}
+                                    </button>
+                                </form>
+                                {% endif %}
+                                <form method="POST" action="/notifications/delete/{{ notification.notification_id }}" onsubmit="return confirm('Delete this notification?');">
+                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Delete notification">
+                                        {{ ic.icon('trash', 'icon icon-sm') }}
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-wrap">{{ ic.icon('bell', 'icon icon-lg') }}</div>
+                        <h4>No notifications</h4>
+                        <p>You are all caught up. New notifications will appear here.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

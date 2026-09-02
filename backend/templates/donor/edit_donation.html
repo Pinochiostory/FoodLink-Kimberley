@@ -1,0 +1,71 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Edit Donation | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('dashboard') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Edit Donation #' ~ donation.donation_id, 'Update the details of your food donation below.') }}
+
+        <main class="page-content" style="max-width: 720px;">
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="/donor/edit-donation/{{ donation.donation_id }}">
+
+                        <div class="form-group">
+                            <label for="food_name">Food name</label>
+                            <input type="text" id="food_name" name="food_name" value="{{ donation.food_name }}" required>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="quantity">Quantity</label>
+                                <input type="text" id="quantity" name="quantity" value="{{ donation.quantity }}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="expiry_date">Expiry date</label>
+                                <input type="date" id="expiry_date" name="expiry_date" value="{{ donation.expiry_date }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" value="{{ donation.location }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="pickup_time">Pickup time</label>
+                            <input type="text" id="pickup_time" name="pickup_time" value="{{ donation.pickup_time }}" required>
+                        </div>
+
+                        <div style="display:flex; gap: var(--space-3);">
+                            <a href="/donor/dashboard" class="btn btn-outline btn-block">
+                                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-block">
+                                {{ ic.icon('check', 'icon icon-sm') }} Save changes
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

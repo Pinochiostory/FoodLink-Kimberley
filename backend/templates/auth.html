@@ -1,0 +1,209 @@
+{% import "partials/icons.html" as ic %}<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ "Log In" if mode == "login" else "Create Account" }} | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body class="auth-body">
+
+<div class="auth-shell">
+    <div class="auth-track" id="authTrack" data-mode="{{ mode }}">
+
+        <!-- ============================================
+             LOGIN SCREEN — image left, form right
+        ============================================= -->
+        <section class="auth-screen auth-screen-login">
+
+            <div class="auth-image-pane" style="background-image: url('{{ url_for('static', filename='img/login-hero.jpg') }}');">
+                <div class="auth-image-scrim"></div>
+                <div class="auth-image-copy">
+                    <span class="auth-image-eyebrow">{{ ic.icon('heart', 'icon icon-sm') }} FoodLink Kimberley</span>
+                    <h2>Welcome back</h2>
+                    <p>Sign in to manage your food requests, donations, and matches.</p>
+                </div>
+            </div>
+
+            <div class="auth-form-pane">
+                <div class="auth-form-inner">
+
+                    <div class="brand">
+                        <div class="brand-mark">{{ ic.icon('link', 'icon icon-lg') }}</div>
+                        <h1>FoodLink Kimberley</h1>
+                        <p>Connecting people with food assistance</p>
+                    </div>
+
+                    {% if mode == "login" %}
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}" data-flash>
+                                    {{ ic.icon('check-circle' if category == 'success' else 'alert-circle', 'icon icon-md') }}
+                                    <p>{{ message }}</p>
+                                </div>
+                            {% endfor %}
+                        {% endwith %}
+                    {% endif %}
+
+                    <div class="auth-heading">
+                        <h2>Log in</h2>
+                        <p>Sign in to access your FoodLink account.</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('login') }}" class="auth-form">
+
+                        <div class="form-group">
+                            <label for="login-email">Email address</label>
+                            <input
+                                type="email"
+                                id="login-email"
+                                name="email"
+                                placeholder="Enter your email address"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input
+                                type="password"
+                                id="login-password"
+                                name="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            {{ ic.icon('log-out', 'icon icon-sm') }} Log in
+                        </button>
+
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>
+                            Don't have an account?
+                            <a href="{{ url_for('register') }}" class="auth-switch" data-target="register">Create an account</a>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ============================================
+             REGISTER SCREEN — form left, image right
+        ============================================= -->
+        <section class="auth-screen auth-screen-register">
+
+            <div class="auth-form-pane">
+                <div class="auth-form-inner">
+
+                    <div class="brand">
+                        <div class="brand-mark">{{ ic.icon('link', 'icon icon-lg') }}</div>
+                        <h1>FoodLink Kimberley</h1>
+                        <p>Connecting people with food assistance</p>
+                    </div>
+
+                    {% if mode == "register" %}
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% for category, message in messages %}
+                                <div class="alert alert-{{ category }}" data-flash>
+                                    {{ ic.icon('check-circle' if category == 'success' else 'alert-circle', 'icon icon-md') }}
+                                    <p>{{ message }}</p>
+                                </div>
+                            {% endfor %}
+                        {% endwith %}
+                    {% endif %}
+
+                    <div class="auth-heading">
+                        <h2>Create an account</h2>
+                        <p>Join FoodLink Kimberley today.</p>
+                    </div>
+
+                    <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+
+                        <div class="form-group">
+                            <label for="register-name">Full name</label>
+                            <input
+                                type="text"
+                                id="register-name"
+                                name="name"
+                                placeholder="Enter your full name"
+                                autocomplete="name"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-email">Email address</label>
+                            <input
+                                type="email"
+                                id="register-email"
+                                name="email"
+                                placeholder="Enter your email address"
+                                autocomplete="email"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <input
+                                type="password"
+                                id="register-password"
+                                name="password"
+                                placeholder="Create a password"
+                                autocomplete="new-password"
+                                required
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-role">Account type</label>
+                            <select id="register-role" name="role" required>
+                                <option value="">Select account type</option>
+                                <option value="Student">Student</option>
+                                <option value="Donor">Donor</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            {{ ic.icon('check', 'icon icon-sm') }} Create account
+                        </button>
+
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>
+                            Already have an account?
+                            <a href="{{ url_for('login') }}" class="auth-switch" data-target="login">Log in</a>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="auth-image-pane" style="background-image: url('{{ url_for('static', filename='img/register-hero.jpg') }}');">
+                <div class="auth-image-scrim"></div>
+                <div class="auth-image-copy">
+                    <span class="auth-image-eyebrow">{{ ic.icon('heart', 'icon icon-sm') }} FoodLink Kimberley</span>
+                    <h2>Join the community</h2>
+                    <p>Whether you need support or want to give it, you belong here.</p>
+                </div>
+            </div>
+
+        </section>
+
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

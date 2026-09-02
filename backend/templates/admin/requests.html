@@ -1,0 +1,90 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Requests | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('requests') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Manage Food Requests', (requests|length ~ ' request' ~ ('s' if requests|length != 1 else '')) if requests else 'No requests') }}
+
+        <main class="page-content">
+            <a href="/admin/dashboard" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-5);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard
+            </a>
+
+            <div data-loading>
+                <div data-skeleton>
+                    <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                        {% for i in range(3) %}<div class="skeleton" style="height:220px; border-radius: var(--radius-md);"></div>{% endfor %}
+                    </div>
+                </div>
+                <div data-loaded-content>
+                    {% if requests %}
+                    <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+                        {% for item in requests %}
+                        <div class="card">
+                            <div class="card-body">
+                                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-3); margin-bottom: var(--space-3);">
+                                    <h4>Request #{{ item.request_id }}</h4>
+                                    <span class="badge {{ 'badge-warning' if item.status == 'Pending' else ('badge-success' if item.status in ['Approved','Completed'] else 'badge-danger') }}">{{ item.status }}</span>
+                                </div>
+                                <p style="font-size: var(--text-sm); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">{{ ic.icon('user', 'icon icon-xs') }} {{ item.student_name }}</p>
+                                <p style="font-size: var(--text-sm); margin-bottom: 6px;">{{ item.description }}</p>
+                                <p style="font-size: var(--text-sm); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">{{ ic.icon('map-pin', 'icon icon-xs') }} {{ item.location }}</p>
+                                <p style="font-size: var(--text-sm); margin-bottom: var(--space-3); display:flex; align-items:center; gap:6px;">{{ ic.icon('calendar', 'icon icon-xs') }} {{ item.request_date }}</p>
+                                <div style="margin-bottom: var(--space-4);">
+                                    <span class="badge {{ 'badge-danger' if item.urgency == 'High' else ('badge-warning' if item.urgency == 'Medium' else 'badge-neutral') }}">{{ item.urgency }} urgency</span>
+                                </div>
+
+                                {% if item.status == "Pending" %}
+                                <div style="display:flex; gap: var(--space-2);">
+                                    <form method="POST" action="/admin/approve-request/{{ item.request_id }}" style="flex:1;">
+                                        <button type="submit" class="btn btn-secondary btn-sm btn-block">{{ ic.icon('check', 'icon icon-sm') }} Approve</button>
+                                    </form>
+                                    <form method="POST" action="/admin/reject-request/{{ item.request_id }}" style="flex:1;">
+                                        <button type="submit" class="btn btn-outline btn-sm btn-block">{{ ic.icon('x', 'icon icon-sm') }} Reject</button>
+                                    </form>
+                                </div>
+                                {% elif item.status == "Approved" %}
+                                <form method="POST" action="/admin/complete-request/{{ item.request_id }}">
+                                    <button type="submit" class="btn btn-primary btn-sm btn-block">{{ ic.icon('check-circle', 'icon icon-sm') }} Mark completed</button>
+                                </form>
+                                {% elif item.status == "Completed" %}
+                                <p style="font-size: var(--text-sm); color: var(--color-ink-subtle);">This request has been completed.</p>
+                                {% elif item.status == "Rejected" %}
+                                <p style="font-size: var(--text-sm); color: var(--color-ink-subtle);">This request was rejected.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="card">
+                        <div class="empty-state">
+                            <div class="icon-wrap">{{ ic.icon('inbox', 'icon icon-lg') }}</div>
+                            <h4>No food requests</h4>
+                            <p>There are currently no food assistance requests in the system.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

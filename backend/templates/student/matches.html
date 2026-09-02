@@ -1,0 +1,86 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Matches | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('matches') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Available Food Matches', 'Food donations that match your assistance request.') }}
+
+        <main class="page-content">
+            <div data-loading>
+                <div data-skeleton>
+                    <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));">
+                        {% for i in range(3) %}
+                        <div class="skeleton" style="height:190px; border-radius: var(--radius-md);"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div data-loaded-content>
+                    {% if matches %}
+                    <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+                        {% for match in matches %}
+                        <div class="card">
+                            <div class="card-body">
+                                <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-3); margin-bottom: var(--space-4);">
+                                    <h3>{{ match.food_name }}</h3>
+                                    <span class="badge {{ 'badge-primary' if match.match_status == 'Suggested' else ('badge-success' if match.match_status == 'Accepted' else 'badge-neutral') }}">
+                                        {{ match.match_status }}
+                                    </span>
+                                </div>
+                                <div style="display:flex; flex-direction:column; gap: var(--space-2); margin-bottom: var(--space-4);">
+                                    <p style="font-size: var(--text-sm); display:flex; justify-content:space-between;"><strong style="color: var(--color-ink);">Quantity</strong> <span>{{ match.quantity }}</span></p>
+                                    <p style="font-size: var(--text-sm); display:flex; justify-content:space-between;"><strong style="color: var(--color-ink);">Location</strong> <span>{{ match.location }}</span></p>
+                                    <p style="font-size: var(--text-sm); display:flex; justify-content:space-between;"><strong style="color: var(--color-ink);">Expiry</strong> <span>{{ match.expiry_date }}</span></p>
+                                    <p style="font-size: var(--text-sm); display:flex; justify-content:space-between;"><strong style="color: var(--color-ink);">Pickup time</strong> <span>{{ match.pickup_time }}</span></p>
+                                </div>
+
+                                {% if match.match_status == "Suggested" %}
+                                <form method="POST" action="/student/accept-donation/{{ match.match_id }}">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        {{ ic.icon('check', 'icon icon-sm') }} Accept donation
+                                    </button>
+                                </form>
+                                {% elif match.match_status == "Accepted" %}
+                                <div class="alert alert-success" style="margin:0;">
+                                    {{ ic.icon('check-circle', 'icon icon-sm') }} Donation accepted successfully.
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="card">
+                        <div class="empty-state">
+                            <div class="icon-wrap">{{ ic.icon('alert-circle', 'icon icon-lg') }}</div>
+                            <h4>No food matches</h4>
+                            <p>No suitable food donations are currently available.</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <a href="/student/dashboard" class="btn btn-ghost btn-sm" style="margin-top: var(--space-6);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard
+            </a>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

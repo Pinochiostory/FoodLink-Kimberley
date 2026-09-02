@@ -1,0 +1,106 @@
+{% import "partials/icons.html" as ic %}
+
+{# =========================================================
+   sidebar(active, role, unread)
+   active: 'dashboard' | 'request' | 'matches' | 'add_donation'
+           | 'users' | 'requests' | 'donations' | 'logs' | 'notifications'
+   role:   'Student' | 'Donor' | 'Admin'
+   ========================================================= #}
+{% macro sidebar(active, unread=0) %}
+{% set role = session.get('role') %}
+{% set display_name = session.get('name', 'User') %}
+{% set unread = unread|default(0) %}
+<div class="sidebar-scrim"></div>
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-mark">{{ ic.icon('link', 'icon icon-md') }}</div>
+    <div class="sidebar-brand-text">
+      <strong>FoodLink</strong>
+      <span>Kimberley</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Primary">
+    {% if role == 'Student' %}
+      <a class="nav-item {{ 'active' if active == 'dashboard' }}" href="{{ url_for('student_dashboard') }}">
+        {{ ic.icon('home') }} Dashboard
+      </a>
+      <a class="nav-item {{ 'active' if active == 'request' }}" href="{{ url_for('request_food') }}">
+        {{ ic.icon('plus') }} Request Food
+      </a>
+      <a class="nav-item {{ 'active' if active == 'matches' }}" href="{{ url_for('student_matches') }}">
+        {{ ic.icon('link') }} My Matches
+      </a>
+      <a class="nav-item {{ 'active' if active == 'notifications' }}" href="{{ url_for('student_notifications') }}">
+        {{ ic.icon('bell') }} Notifications
+        {% if unread and unread > 0 %}<span class="badge-count">{{ unread }}</span>{% endif %}
+      </a>
+    {% elif role == 'Donor' %}
+      <a class="nav-item {{ 'active' if active == 'dashboard' }}" href="{{ url_for('donor_dashboard') }}">
+        {{ ic.icon('home') }} Dashboard
+      </a>
+      <a class="nav-item {{ 'active' if active == 'add_donation' }}" href="{{ url_for('add_donation') }}">
+        {{ ic.icon('plus') }} Add Donation
+      </a>
+      <a class="nav-item {{ 'active' if active == 'notifications' }}" href="{{ url_for('donor_notifications') }}">
+        {{ ic.icon('bell') }} Notifications
+        {% if unread and unread > 0 %}<span class="badge-count">{{ unread }}</span>{% endif %}
+      </a>
+    {% elif role == 'Admin' %}
+      <a class="nav-item {{ 'active' if active == 'dashboard' }}" href="{{ url_for('admin_dashboard') }}">
+        {{ ic.icon('home') }} Dashboard
+      </a>
+      <a class="nav-item {{ 'active' if active == 'users' }}" href="{{ url_for('admin_users') }}">
+        {{ ic.icon('users') }} Users
+      </a>
+      <a class="nav-item {{ 'active' if active == 'requests' }}" href="{{ url_for('admin_requests') }}">
+        {{ ic.icon('inbox') }} Requests
+      </a>
+      <a class="nav-item {{ 'active' if active == 'donations' }}" href="{{ url_for('admin_donations') }}">
+        {{ ic.icon('box') }} Donations
+      </a>
+      <a class="nav-item {{ 'active' if active == 'logs' }}" href="{{ url_for('admin_activity_logs') }}">
+        {{ ic.icon('activity') }} Activity Logs
+      </a>
+      <a class="nav-item {{ 'active' if active == 'notifications' }}" href="{{ url_for('notifications') }}">
+        {{ ic.icon('bell') }} Notifications
+      </a>
+    {% endif %}
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-chip">
+      <div class="avatar">{{ display_name[0]|upper }}</div>
+      <div class="user-chip-text">
+        <strong>{{ display_name }}</strong>
+        <span>{{ role }}</span>
+      </div>
+    </div>
+    <a class="logout-link" href="{{ url_for('logout') }}">
+      {{ ic.icon('log-out', 'icon icon-sm') }} Log out
+    </a>
+  </div>
+</aside>
+{% endmacro %}
+
+{# =========================================================
+   topbar(title, subtitle, notif_url, unread)
+   ========================================================= #}
+{% macro topbar(title, subtitle='', notif_url=None, unread=0) %}
+{% set unread = unread|default(0) %}
+<header class="topbar">
+  <button class="sidebar-toggle" type="button" aria-label="Toggle menu">{{ ic.icon('menu', 'icon icon-md') }}</button>
+  <div class="topbar-title">
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<p>{{ subtitle }}</p>{% endif %}
+  </div>
+  <div class="topbar-actions">
+    {% if notif_url %}
+    <a class="icon-btn icon-btn-notify" href="{{ notif_url }}" aria-label="Notifications">
+      {{ ic.icon('bell', 'icon icon-sm') }}
+      {% if unread and unread > 0 %}<span class="dot"></span>{% endif %}
+    </a>
+    {% endif %}
+  </div>
+</header>
+{% endmacro %}

@@ -1,0 +1,73 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Activity Logs | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('logs') }}
+
+    <div class="main-col">
+        {{ sb.topbar('System Activity', 'Audit log of actions taken across FoodLink.') }}
+
+        <main class="page-content">
+            <a href="/admin/dashboard" class="btn btn-ghost btn-sm" style="margin-bottom: var(--space-5);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard
+            </a>
+
+            <div class="card" data-loading>
+                <div data-skeleton style="padding: var(--space-6);">
+                    {% for i in range(5) %}
+                    <div class="skeleton skeleton-text" style="height:24px; margin-bottom: var(--space-4);"></div>
+                    {% endfor %}
+                </div>
+                <div data-loaded-content>
+                    {% if logs %}
+                    <div>
+                        {% for log in logs %}
+                        <div style="display:flex; gap: var(--space-4); padding: var(--space-5) var(--space-6); border-bottom: 1px solid var(--color-border);">
+                            <div class="stat-icon" style="width:36px; height:36px; flex-shrink:0;">{{ ic.icon('activity', 'icon icon-sm') }}</div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; gap: var(--space-3); margin-bottom: 4px;">
+                                    <strong style="color: var(--color-ink); font-size: var(--text-sm);">{{ log.action }}</strong>
+                                    <span style="color: var(--color-ink-subtle); font-size: var(--text-xs); white-space:nowrap;">{{ log.created_at }}</span>
+                                </div>
+                                <p style="font-size: var(--text-sm); margin-bottom: 6px;">{{ log.description }}</p>
+                                {% if log.user_name %}
+                                <p style="font-size: var(--text-xs); color: var(--color-ink-subtle); display:flex; align-items:center; gap: var(--space-2); flex-wrap: wrap;">
+                                    <span style="display:flex; align-items:center; gap:4px;">{{ ic.icon('user', 'icon icon-xs') }} {{ log.user_name }}</span>
+                                    {% if log.user_email %}<span>&mdash; {{ log.user_email }}</span>{% endif %}
+                                    {% if log.user_role %}<span class="badge badge-neutral">{{ log.user_role }}</span>{% endif %}
+                                </p>
+                                {% else %}
+                                <p style="font-size: var(--text-xs); color: var(--color-ink-subtle);">System action</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <div class="icon-wrap">{{ ic.icon('activity', 'icon icon-lg') }}</div>
+                        <h4>No activity yet</h4>
+                        <p>No activity has been recorded yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

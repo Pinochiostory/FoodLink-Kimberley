@@ -1,0 +1,253 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('dashboard', unread_notifications) }}
+
+    <div class="main-col">
+        {{ sb.topbar('Student Dashboard', 'Welcome back, ' ~ session.get('name', '') ~ '.', url_for('student_notifications'), unread_notifications) }}
+
+        <main class="page-content">
+
+            <!-- ================= STATISTICS ================= -->
+            <div class="stat-grid" data-loading>
+                <div data-skeleton>
+                    <div class="stat-grid" style="margin-bottom:0">
+                        {% for i in range(4) %}
+                        <div class="stat-card skeleton" style="height:84px"></div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div data-loaded-content>
+                    <div class="stat-grid" style="margin-bottom:0">
+                        <div class="stat-card">
+                            <div class="stat-icon">{{ ic.icon('inbox', 'icon icon-md') }}</div>
+                            <div class="stat-body">
+                                <div class="stat-value">{{ statistics.total_requests }}</div>
+                                <div class="stat-label">Total requests</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">{{ ic.icon('clock', 'icon icon-md') }}</div>
+                            <div class="stat-body">
+                                <div class="stat-value">{{ statistics.pending_requests }}</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon accent">{{ ic.icon('check-circle', 'icon icon-md') }}</div>
+                            <div class="stat-body">
+                                <div class="stat-value">{{ statistics.approved_requests }}</div>
+                                <div class="stat-label">Approved</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">{{ ic.icon('check', 'icon icon-md') }}</div>
+                            <div class="stat-body">
+                                <div class="stat-value">{{ statistics.completed_requests }}</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= AVAILABLE FOOD MATCHES ================= -->
+            <div class="card" style="margin-bottom: var(--space-6);">
+                <div class="card-header">
+                    <div>
+                        <h3>Available food matches</h3>
+                        <p>Donations that fit your request</p>
+                    </div>
+                    {{ ic.icon('link', 'icon icon-md') }}
+                </div>
+                <div class="card-body" data-loading>
+                    <div data-skeleton>
+                        <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:0;">
+                            {% for i in range(3) %}
+                            <div class="skeleton" style="height:170px; border-radius: var(--radius-md);"></div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div data-loaded-content>
+                        {% if matches %}
+                        <div class="stat-grid" style="grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin-bottom:0;">
+                            {% for match in matches %}
+                            <div class="card" style="box-shadow:none;">
+                                <div class="card-body">
+                                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: var(--space-3); margin-bottom: var(--space-3);">
+                                        <h4>{{ match.food_name }}</h4>
+                                        <span class="badge {{ 'badge-primary' if match.match_status == 'Suggested' else ('badge-success' if match.match_status == 'Accepted' else 'badge-neutral') }}">
+                                            {{ match.match_status }}
+                                        </span>
+                                    </div>
+                                    <p style="font-size: var(--text-sm); margin-bottom: 6px;"><strong style="color: var(--color-ink);">Quantity:</strong> {{ match.quantity }}</p>
+                                    <p style="font-size: var(--text-sm); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">{{ ic.icon('map-pin', 'icon icon-xs') }} {{ match.location }}</p>
+                                    <p style="font-size: var(--text-sm); margin-bottom: 6px; display:flex; align-items:center; gap:6px;">{{ ic.icon('calendar', 'icon icon-xs') }} Expires {{ match.expiry_date }}</p>
+                                    <p style="font-size: var(--text-sm); margin-bottom: var(--space-4); display:flex; align-items:center; gap:6px;">{{ ic.icon('clock', 'icon icon-xs') }} Pickup {{ match.pickup_time }}</p>
+
+                                    {% if match.match_status == "Suggested" %}
+                                    <form method="POST" action="/student/accept-donation/{{ match.match_id }}">
+                                        <button type="submit" class="btn btn-primary btn-sm btn-block">
+                                            {{ ic.icon('check', 'icon icon-sm') }} Accept donation
+                                        </button>
+                                    </form>
+                                    {% elif match.match_status == "Accepted" %}
+                                    <p style="font-size: var(--text-sm); color: var(--color-success); font-weight: var(--fw-semibold); display:flex; align-items:center; gap:6px;">
+                                        {{ ic.icon('check-circle', 'icon icon-sm') }} Donation accepted
+                                    </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="icon-wrap">{{ ic.icon('inbox', 'icon icon-lg') }}</div>
+                            <h4>No matches yet</h4>
+                            <p>No suitable food donations are currently available for your request.</p>
+                            <a href="/student/request-food" class="btn btn-primary btn-sm" style="margin-top: var(--space-4);">
+                                {{ ic.icon('plus', 'icon icon-sm') }} Request food assistance
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= MY REQUESTS ================= -->
+            <div class="card" style="margin-bottom: var(--space-6);">
+                <div class="card-header">
+                    <div>
+                        <h3>My food requests</h3>
+                        <p>Everything you've submitted so far</p>
+                    </div>
+                    <a href="/student/request-food" class="btn btn-secondary btn-sm">
+                        {{ ic.icon('plus', 'icon icon-sm') }} New request
+                    </a>
+                </div>
+                <div data-loading>
+                    <div data-skeleton style="padding: var(--space-6);">
+                        {% for i in range(3) %}
+                        <div class="skeleton skeleton-text" style="height:48px; margin-bottom: var(--space-3);"></div>
+                        {% endfor %}
+                    </div>
+                    <div data-loaded-content>
+                        {% if requests %}
+                        <div class="table-wrap" style="border:none; border-radius:0;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Request</th>
+                                        <th>Urgency</th>
+                                        <th>Location</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in requests %}
+                                    <tr>
+                                        <td>
+                                            <strong>#{{ item.request_id }}</strong>
+                                            <div style="color: var(--color-ink-subtle); font-size: var(--text-xs); margin-top:2px;">{{ item.description }}</div>
+                                        </td>
+                                        <td>{{ item.urgency }}</td>
+                                        <td>{{ item.location }}</td>
+                                        <td>
+                                            <span class="badge {{ 'badge-warning' if item.status == 'Pending' else ('badge-success' if item.status in ['Approved','Completed'] else 'badge-neutral') }}">
+                                                {{ item.status }}
+                                            </span>
+                                        </td>
+                                        <td>{{ item.request_date }}</td>
+                                        <td>
+                                            {% if item.status == "Pending" %}
+                                            <div class="table-actions">
+                                                <a href="/student/edit-request/{{ item.request_id }}" class="btn btn-outline btn-sm" aria-label="Edit request">
+                                                    {{ ic.icon('edit', 'icon icon-sm') }}
+                                                </a>
+                                                <form method="POST" action="/student/cancel-request/{{ item.request_id }}" onsubmit="return confirm('Are you sure you want to cancel this food request?');">
+                                                    <button type="submit" class="btn btn-danger btn-sm" aria-label="Cancel request">
+                                                        {{ ic.icon('x', 'icon icon-sm') }}
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            {% else %}
+                                            <span style="color: var(--color-ink-subtle); font-size: var(--text-sm);">&mdash;</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="empty-state">
+                            <div class="icon-wrap">{{ ic.icon('file-text', 'icon icon-lg') }}</div>
+                            <h4>No requests yet</h4>
+                            <p>You have not submitted any food requests yet.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= NOTIFICATIONS ================= -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3>Recent notifications</h3>
+                        <p>Updates on your requests and matches</p>
+                    </div>
+                    <a href="/student/notifications" class="btn btn-ghost btn-sm">
+                        View all {{ ic.icon('arrow-right', 'icon icon-sm') }}
+                    </a>
+                </div>
+                <div class="card-body" data-loading>
+                    <div data-skeleton>
+                        {% for i in range(3) %}
+                        <div class="skeleton skeleton-text" style="height:20px; margin-bottom: var(--space-3);"></div>
+                        {% endfor %}
+                    </div>
+                    <div data-loaded-content>
+                        {% if notifications %}
+                        <div style="display:flex; flex-direction:column; gap: var(--space-3);">
+                            {% for notification in notifications %}
+                            <div style="display:flex; align-items:flex-start; gap: var(--space-3); padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border);">
+                                <div class="stat-icon {{ '' if not notification.is_read else '' }}" style="width:32px; height:32px; {{ 'background: var(--color-primary-light); color: var(--color-primary-active);' if not notification.is_read else 'background: var(--color-bg); color: var(--color-ink-subtle);' }}">
+                                    {{ ic.icon('bell', 'icon icon-xs') }}
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <p style="color: var(--color-ink); font-weight: {{ 'var(--fw-semibold)' if not notification.is_read else 'var(--fw-regular)' }};">{{ notification.message }}</p>
+                                    <small style="color: var(--color-ink-subtle); font-size: var(--text-xs);">{{ notification.created_at }}</small>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p style="color: var(--color-ink-subtle);">You have no notifications.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>

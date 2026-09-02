@@ -1,0 +1,72 @@
+{% import "partials/icons.html" as ic %}
+{% import "partials/sidebar.html" as sb with context %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request Food Assistance | FoodLink Kimberley</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+</head>
+<body>
+
+<div class="app-shell">
+    {{ sb.sidebar('request') }}
+
+    <div class="main-col">
+        {{ sb.topbar('Request Food Assistance', 'Tell us what you need and where you are located.') }}
+
+        <main class="page-content" style="max-width: 720px;">
+
+            <div class="card">
+                <div class="card-body">
+                    <form method="POST" action="/student/request-food">
+
+                        <div class="form-group">
+                            <label for="urgency">Urgency</label>
+                            <select id="urgency" name="urgency" required>
+                                <option value="">Select urgency</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
+                            </select>
+                            <span class="form-hint">Select High if you require assistance urgently.</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Location</label>
+                            <input type="text" id="location" name="location" placeholder="e.g. SPU Campus" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">What food assistance do you need?</label>
+                            <textarea id="description" name="description" rows="5" placeholder="Describe what you need..."></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            {{ ic.icon('check', 'icon icon-sm') }} Submit request
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
+            <div class="alert alert-info" style="margin-top: var(--space-5);">
+                {{ ic.icon('info', 'icon icon-sm') }}
+                <span>Your request will be added to the system and matched with available food donations as they become available.</span>
+            </div>
+
+            <a href="/student/dashboard" class="btn btn-ghost btn-sm" style="margin-top: var(--space-5);">
+                {{ ic.icon('arrow-left', 'icon icon-sm') }} Back to dashboard
+            </a>
+
+        </main>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/ui.js') }}"></script>
+</body>
+</html>
