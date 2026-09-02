@@ -190,78 +190,86 @@ def generate_recommendations():
     connection = get_connection()
     cursor = connection.cursor(dictionary=True)
 
-    recommendations = []
-
-    for location in location_predictions:
-
-        location_name = location["location"]
-        prediction = location["prediction"]
-
+    try:
+        # Get available food totals for ALL locations in one query
         cursor.execute(
             """
-            SELECT COALESCE(SUM(quantity), 0) AS total_food
+            SELECT
+                location,
+                COALESCE(SUM(quantity), 0) AS total_food
             FROM food_donations
-            WHERE location = %s
-            AND status = 'Available'
-            """,
-            (location_name,)
+            WHERE status = 'Available'
+            GROUP BY location
+            """
         )
 
-        result = cursor.fetchone()
+        food_by_location = {
+            row["location"]: row["total_food"]
+            for row in cursor.fetchall()
+        }
 
-        available_food = result["total_food"]
+        recommendations = []
 
-        if prediction >= 10:
+        for location in location_predictions:
 
-            if available_food < prediction:
-                recommendation = (
-                    f"High demand expected at "
-                    f"{location_name}. "
-                    f"Increase food supply."
-                )
+            location_name = location["location"]
+            prediction = location["prediction"]
 
-            else:
-                recommendation = (
-                    f"High demand expected at "
-                    f"{location_name}. "
-                    f"Current food supply may be sufficient."
-                )
-
-        elif prediction >= 5:
-
-            if available_food < prediction:
-                recommendation = (
-                    f"Moderate demand expected at "
-                    f"{location_name}. "
-                    f"Consider increasing food supply."
-                )
-
-            else:
-                recommendation = (
-                    f"Moderate demand expected at "
-                    f"{location_name}. "
-                    f"Current supply appears sufficient."
-                )
-
-        else:
-
-            recommendation = (
-                f"Low demand expected at "
-                f"{location_name}. "
-                f"Current supply should be monitored."
+            available_food = food_by_location.get(
+                location_name,
+                0
             )
 
-        recommendations.append({
-            "location": location_name,
-            "prediction": prediction,
-            "available_food": available_food,
-            "recommendation": recommendation
-        })
+            if prediction >= 10:
 
-    cursor.close()
-    connection.close()
+                if available_food < prediction:
+                    recommendation = (
+                        f"High demand expected at "
+                        f"{location_name}. "
+                        f"Increase food supply."
+                    )
+                else:
+                    recommendation = (
+                        f"High demand expected at "
+                        f"{location_name}. "
+                        f"Current food supply may be sufficient."
+                    )
 
-    return recommendations
+            elif prediction >= 5:
+
+                if available_food < prediction:
+                    recommendation = (
+                        f"Moderate demand expected at "
+                        f"{location_name}. "
+                        f"Consider increasing food supply."
+                    )
+                else:
+                    recommendation = (
+                        f"Moderate demand expected at "
+                        f"{location_name}. "
+                        f"Current supply appears sufficient."
+                    )
+
+            else:
+
+                recommendation = (
+                    f"Low demand expected at "
+                    f"{location_name}. "
+                    f"Current supply should be monitored."
+                )
+
+            recommendations.append({
+                "location": location_name,
+                "prediction": prediction,
+                "available_food": available_food,
+                "recommendation": recommendation
+            })
+
+        return recommendations
+
+    finally:
+        cursor.close()
+        connection.close()
 
 
 if __name__ == "__main__":
